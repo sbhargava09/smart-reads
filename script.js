@@ -1,4 +1,4 @@
-// Smart Reads v2.0 - Feed Management and Interactivity
+// Smart Reads v2.1 - Feed Management and Interactivity
 
 // RSS Feed Sources organized by category (reordered, books removed)
 const feedSources = {
@@ -209,7 +209,7 @@ function updateSourceChecklist() {
     });
 }
 
-// Load all RSS feeds
+// Load all RSS feeds (fast categories first, ophthalmology in background)
 async function loadFeeds() {
     const loadingEl = document.getElementById('loading');
     const feedEl = document.getElementById('feed');
@@ -220,25 +220,27 @@ async function loadFeeds() {
     errorEl.style.display = 'none';
     allArticles = [];
 
-    const promises = [];
+    const fastPromises = [];
+    const slowPromises = [];
 
-    // Fetch all feeds
+    // Separate fast feeds from slow feeds (ophthalmology)
     for (const [category, feeds] of Object.entries(feedSources)) {
         for (const feed of feeds) {
-            // Use backup proxy directly for ophthalmology (Google News)
             if (feed.useBackup) {
-                promises.push(fetchFeedDirect(feed.url, feed.name, category));
+                // Ophthalmology feeds - load in background
+                slowPromises.push(fetchFeedDirect(feed.url, feed.name, category));
             } else {
-                promises.push(fetchFeed(feed.url, feed.name, category));
+                // All other feeds - load first
+                fastPromises.push(fetchFeed(feed.url, feed.name, category));
             }
         }
     }
 
     try {
-        const results = await Promise.allSettled(promises);
+        // First: Load fast feeds and display immediately
+        const fastResults = await Promise.allSettled(fastPromises);
 
-        // Collect all successful articles
-        results.forEach(result => {
+        fastResults.forEach(result => {
             if (result.status === 'fulfilled' && result.value) {
                 allArticles.push(...result.value);
             }
@@ -255,10 +257,45 @@ async function loadFeeds() {
             updateSourceChecklist();
             displayArticles();
         }
+
+        // Second: Load ophthalmology in background, then merge
+        if (slowPromises.length > 0) {
+            loadOphthalmologyInBackground(slowPromises);
+        }
     } catch (error) {
         console.error('Error loading feeds:', error);
         loadingEl.style.display = 'none';
         errorEl.style.display = 'block';
+    }
+}
+
+// Load ophthalmology feeds in background and merge when ready
+async function loadOphthalmologyInBackground(promises) {
+    try {
+        const results = await Promise.allSettled(promises);
+
+        const ophthalmologyArticles = [];
+        results.forEach(result => {
+            if (result.status === 'fulfilled' && result.value) {
+                ophthalmologyArticles.push(...result.value);
+            }
+        });
+
+        if (ophthalmologyArticles.length > 0) {
+            // Merge ophthalmology articles into main feed
+            allArticles.push(...ophthalmologyArticles);
+
+            // Re-sort by date
+            allArticles.sort((a, b) => b.date - a.date);
+
+            // Refresh display and source checklist
+            updateSourceChecklist();
+            displayArticles();
+
+            console.log(`Added ${ophthalmologyArticles.length} ophthalmology articles`);
+        }
+    } catch (error) {
+        console.error('Error loading ophthalmology feeds:', error);
     }
 }
 
