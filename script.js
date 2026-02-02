@@ -1,4 +1,4 @@
-// Smart Reads v1.6 - Feed Management and Interactivity
+// Smart Reads v1.7 - Feed Management and Interactivity
 
 // RSS Feed Sources organized by category
 const feedSources = {
@@ -36,10 +36,10 @@ const feedSources = {
         { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Books.xml', name: 'NYT Books' }
     ],
     ophthalmology: [
-        { url: 'https://news.google.com/rss/search?q=ophthalmology&hl=en-US&gl=US&ceid=US:en', name: 'Google News Ophthalmology' },
-        { url: 'https://news.google.com/rss/search?q=glaucoma&hl=en-US&gl=US&ceid=US:en', name: 'Google News Glaucoma' },
-        { url: 'https://news.google.com/rss/search?q=retina+disease&hl=en-US&gl=US&ceid=US:en', name: 'Google News Retina' },
-        { url: 'https://news.google.com/rss/search?q=cataract&hl=en-US&gl=US&ceid=US:en', name: 'Google News Cataract' }
+        { url: 'https://news.google.com/rss/search?q=ophthalmology', name: 'Google News Ophthalmology' },
+        { url: 'https://news.google.com/rss/search?q=glaucoma', name: 'Google News Glaucoma' },
+        { url: 'https://news.google.com/rss/search?q=eye+surgery', name: 'Google News Eye Surgery' },
+        { url: 'https://news.google.com/rss/search?q=macular+degeneration', name: 'Google News Macular Degeneration' }
     ],
     perspectives: [
         { url: 'https://www.vox.com/rss/index.xml', name: 'Vox' },
@@ -139,8 +139,8 @@ function getParentSource(sourceName) {
         'Vox Policy & Politics': 'Vox',
         'Google News Ophthalmology': 'Google News',
         'Google News Glaucoma': 'Google News',
-        'Google News Retina': 'Google News',
-        'Google News Cataract': 'Google News'
+        'Google News Eye Surgery': 'Google News',
+        'Google News Macular Degeneration': 'Google News'
     };
     return parentMap[sourceName] || sourceName;
 }
