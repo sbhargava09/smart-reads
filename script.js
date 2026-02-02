@@ -1,6 +1,6 @@
-// Smart Reads v1.8 - Feed Management and Interactivity
+// Smart Reads v2.0 - Feed Management and Interactivity
 
-// RSS Feed Sources organized by category
+// RSS Feed Sources organized by category (reordered, books removed)
 const feedSources = {
     tech: [
         { url: 'https://www.theverge.com/rss/index.xml', name: 'The Verge' },
@@ -8,13 +8,11 @@ const feedSources = {
         { url: 'https://techcrunch.com/feed/', name: 'TechCrunch' },
         { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml', name: 'NYT Technology' }
     ],
-    sciences: [
-        { url: 'https://www.statnews.com/feed/', name: 'STAT News' },
-        { url: 'https://www.sciencedaily.com/rss/health_medicine.xml', name: 'Science Daily Medicine' },
-        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Health.xml', name: 'NYT Health' },
-        { url: 'https://www.sciencedaily.com/rss/all.xml', name: 'Science Daily' },
-        { url: 'https://www.quantamagazine.org/feed/', name: 'Quanta Magazine' },
-        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Science.xml', name: 'NYT Science' }
+    ophthalmology: [
+        { url: 'https://news.google.com/rss/search?q=ophthalmology', name: 'Google News Ophthalmology', useBackup: true },
+        { url: 'https://news.google.com/rss/search?q=glaucoma', name: 'Google News Glaucoma', useBackup: true },
+        { url: 'https://news.google.com/rss/search?q=eye+surgery', name: 'Google News Eye Surgery', useBackup: true },
+        { url: 'https://news.google.com/rss/search?q=macular+degeneration', name: 'Google News Macular Degeneration', useBackup: true }
     ],
     business: [
         { url: 'https://feeds.bloomberg.com/markets/news.rss', name: 'Bloomberg Markets' },
@@ -30,17 +28,6 @@ const feedSources = {
         { url: 'https://www.espn.com/espn/rss/soccer/news', name: 'ESPN Soccer' },
         { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Sports.xml', name: 'NYT Sports' }
     ],
-    books: [
-        { url: 'https://fourminutebooks.com/feed/', name: 'Four Minute Books' },
-        { url: 'https://fs.blog/feed/', name: 'Farnam Street' },
-        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Books.xml', name: 'NYT Books' }
-    ],
-    ophthalmology: [
-        { url: 'https://news.google.com/rss/search?q=ophthalmology', name: 'Google News Ophthalmology' },
-        { url: 'https://news.google.com/rss/search?q=glaucoma', name: 'Google News Glaucoma' },
-        { url: 'https://news.google.com/rss/search?q=eye+surgery', name: 'Google News Eye Surgery' },
-        { url: 'https://news.google.com/rss/search?q=macular+degeneration', name: 'Google News Macular Degeneration' }
-    ],
     perspectives: [
         { url: 'https://www.vox.com/rss/index.xml', name: 'Vox' },
         { url: 'https://www.vox.com/rss/future-perfect/index.xml', name: 'Vox Future Perfect' },
@@ -49,13 +36,21 @@ const feedSources = {
         { url: 'https://www.theatlantic.com/feed/all/', name: 'The Atlantic' },
         { url: 'https://www.newyorker.com/feed/news', name: 'The New Yorker' },
         { url: 'https://www.economist.com/the-world-this-week/rss.xml', name: 'The Economist' }
+    ],
+    sciences: [
+        { url: 'https://www.statnews.com/feed/', name: 'STAT News' },
+        { url: 'https://www.sciencedaily.com/rss/health_medicine.xml', name: 'Science Daily Medicine' },
+        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Health.xml', name: 'NYT Health' },
+        { url: 'https://www.sciencedaily.com/rss/all.xml', name: 'Science Daily' },
+        { url: 'https://www.quantamagazine.org/feed/', name: 'Quanta Magazine' },
+        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Science.xml', name: 'NYT Science' }
     ]
 };
 
 // Global state
 let allArticles = [];
 let currentCategory = 'all';
-let currentSource = 'all';
+let selectedSources = new Set(); // Changed to Set for multi-select
 let searchQuery = '';
 
 // Sources with paywalls - URLs will be routed through removepaywall.com
@@ -68,56 +63,11 @@ const paywalledSources = [
     'NYT Business',
     'NYT Science',
     'NYT Sports',
-    'NYT Books',
     'NYT Opinion',
     'The Atlantic',
     'The New Yorker',
     'The Economist'
 ];
-
-// Check if source has paywall and return appropriate URL
-function getArticleUrl(link, sourceName) {
-    if (paywalledSources.includes(sourceName)) {
-        return `https://www.removepaywall.com/search?url=${encodeURIComponent(link)}`;
-    }
-    return link;
-}
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-    setupEventListeners();
-    loadFeeds();
-});
-
-// Setup event listeners
-function setupEventListeners() {
-    // Filter buttons
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentCategory = btn.dataset.category;
-            updateSourceFilter();
-            displayArticles();
-        });
-    });
-
-    // Refresh button
-    document.getElementById('refresh-btn').addEventListener('click', () => {
-        loadFeeds();
-    });
-
-    // Search input
-    const searchInput = document.getElementById('search-input');
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            searchQuery = e.target.value.toLowerCase();
-            displayArticles();
-        });
-    }
-
-    // Source filter buttons - setup happens after feeds load
-}
 
 // Map source names to their parent publication
 function getParentSource(sourceName) {
@@ -127,7 +77,6 @@ function getParentSource(sourceName) {
         'NYT Business': 'NYT',
         'NYT Science': 'NYT',
         'NYT Sports': 'NYT',
-        'NYT Books': 'NYT',
         'NYT Opinion': 'NYT',
         'ESPN NBA': 'ESPN',
         'ESPN NFL': 'ESPN',
@@ -145,10 +94,53 @@ function getParentSource(sourceName) {
     return parentMap[sourceName] || sourceName;
 }
 
-// Update source filter buttons based on current category
-function updateSourceFilter() {
-    const sourceButtonsContainer = document.getElementById('source-buttons');
-    if (!sourceButtonsContainer) return;
+// Check if source has paywall and return appropriate URL
+function getArticleUrl(link, sourceName) {
+    if (paywalledSources.includes(sourceName)) {
+        return `https://www.removepaywall.com/search?url=${encodeURIComponent(link)}`;
+    }
+    return link;
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    setupEventListeners();
+    loadFeeds();
+    loadTodaysGames();
+});
+
+// Setup event listeners
+function setupEventListeners() {
+    // Tab navigation
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            currentCategory = tab.dataset.category;
+            updateSourceChecklist();
+            displayArticles();
+        });
+    });
+
+    // Hard refresh button
+    document.getElementById('hard-refresh-btn').addEventListener('click', () => {
+        location.reload(true);
+    });
+
+    // Search input
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase();
+            displayArticles();
+        });
+    }
+}
+
+// Update source checklist in sidebar
+function updateSourceChecklist() {
+    const checklistContainer = document.getElementById('source-checklist');
+    if (!checklistContainer) return;
 
     // Get unique parent sources for current category
     let parentSources = [];
@@ -160,25 +152,58 @@ function updateSourceFilter() {
             .map(a => getParentSource(a.source)))].sort();
     }
 
-    // Reset to all sources
-    currentSource = 'all';
+    // Clear and rebuild checklist
+    checklistContainer.innerHTML = '';
 
-    // Build buttons
-    sourceButtonsContainer.innerHTML = '<button class="source-btn active" data-source="all">All</button>';
+    // Add "Select All" option
+    const selectAllItem = document.createElement('div');
+    selectAllItem.className = 'source-checkbox-item';
+    selectAllItem.innerHTML = `
+        <input type="checkbox" id="source-all" checked>
+        <label for="source-all"><strong>All Sources</strong></label>
+    `;
+    checklistContainer.appendChild(selectAllItem);
+
+    // Add individual sources
     parentSources.forEach(source => {
-        const btn = document.createElement('button');
-        btn.className = 'source-btn';
-        btn.dataset.source = source;
-        btn.textContent = source;
-        sourceButtonsContainer.appendChild(btn);
+        const item = document.createElement('div');
+        item.className = 'source-checkbox-item';
+        const sourceId = `source-${source.replace(/\s+/g, '-').toLowerCase()}`;
+        item.innerHTML = `
+            <input type="checkbox" id="${sourceId}" data-source="${source}" checked>
+            <label for="${sourceId}">${source}</label>
+        `;
+        checklistContainer.appendChild(item);
     });
 
-    // Add click listeners to source buttons
-    sourceButtonsContainer.querySelectorAll('.source-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            sourceButtonsContainer.querySelectorAll('.source-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentSource = btn.dataset.source;
+    // Reset selected sources (all selected by default)
+    selectedSources = new Set(parentSources);
+
+    // Add event listeners
+    const allCheckbox = document.getElementById('source-all');
+    allCheckbox.addEventListener('change', (e) => {
+        const checkboxes = checklistContainer.querySelectorAll('input[data-source]');
+        checkboxes.forEach(cb => {
+            cb.checked = e.target.checked;
+            if (e.target.checked) {
+                selectedSources.add(cb.dataset.source);
+            } else {
+                selectedSources.delete(cb.dataset.source);
+            }
+        });
+        displayArticles();
+    });
+
+    checklistContainer.querySelectorAll('input[data-source]').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                selectedSources.add(e.target.dataset.source);
+            } else {
+                selectedSources.delete(e.target.dataset.source);
+            }
+            // Update "All" checkbox state
+            const allChecked = selectedSources.size === parentSources.length;
+            document.getElementById('source-all').checked = allChecked;
             displayArticles();
         });
     });
@@ -200,7 +225,12 @@ async function loadFeeds() {
     // Fetch all feeds
     for (const [category, feeds] of Object.entries(feedSources)) {
         for (const feed of feeds) {
-            promises.push(fetchFeed(feed.url, feed.name, category));
+            // Use backup proxy directly for ophthalmology (Google News)
+            if (feed.useBackup) {
+                promises.push(fetchFeedDirect(feed.url, feed.name, category));
+            } else {
+                promises.push(fetchFeed(feed.url, feed.name, category));
+            }
         }
     }
 
@@ -222,7 +252,7 @@ async function loadFeeds() {
         if (allArticles.length === 0) {
             errorEl.style.display = 'block';
         } else {
-            updateSourceFilter();
+            updateSourceChecklist();
             displayArticles();
         }
     } catch (error) {
@@ -232,25 +262,20 @@ async function loadFeeds() {
     }
 }
 
-// Fetch individual RSS feed using a CORS proxy
+// Fetch feed using rss2json (primary method for most feeds)
 async function fetchFeed(feedUrl, sourceName, category) {
     try {
-        // Using RSS2JSON service as a CORS proxy
         const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`;
-
         const response = await fetch(proxyUrl);
         const data = await response.json();
 
         if (data.status !== 'ok') {
             console.warn(`Failed to fetch ${sourceName}:`, data.message);
-            // Try backup proxy for failed feeds
-            return await fetchFeedBackup(feedUrl, sourceName, category);
+            return [];
         }
 
-        // Parse items
         return data.items.slice(0, 10).map(item => {
             const fullText = stripHtml(item.description || item.content || '', false);
-            // Extract image from enclosure, thumbnail, or content
             let image = item.enclosure?.link || item.thumbnail || null;
             if (!image && item.content) {
                 const imgMatch = item.content.match(/<img[^>]+src="([^">]+)"/);
@@ -274,20 +299,19 @@ async function fetchFeed(feedUrl, sourceName, category) {
     }
 }
 
-// Backup fetch using allorigins.win proxy for XML parsing
-async function fetchFeedBackup(feedUrl, sourceName, category) {
+// Fetch feed using allorigins proxy and XML parsing (for Google News/ophthalmology)
+async function fetchFeedDirect(feedUrl, sourceName, category) {
     try {
         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(feedUrl)}`;
         const response = await fetch(proxyUrl);
         const text = await response.text();
 
-        // Parse XML
         const parser = new DOMParser();
         const xml = parser.parseFromString(text, 'text/xml');
         const items = xml.querySelectorAll('item');
 
         if (items.length === 0) {
-            console.warn(`Backup fetch failed for ${sourceName}: No items found`);
+            console.warn(`No items found for ${sourceName}`);
             return [];
         }
 
@@ -314,10 +338,10 @@ async function fetchFeedBackup(feedUrl, sourceName, category) {
             });
         });
 
-        console.log(`Backup fetch succeeded for ${sourceName}: ${articles.length} articles`);
+        console.log(`Loaded ${articles.length} articles from ${sourceName}`);
         return articles;
     } catch (error) {
-        console.error(`Backup fetch failed for ${sourceName}:`, error);
+        console.error(`Error fetching ${sourceName}:`, error);
         return [];
     }
 }
@@ -328,7 +352,6 @@ function stripHtml(html, truncate = true) {
     tmp.innerHTML = html;
     const text = tmp.textContent || tmp.innerText || '';
     if (!truncate) return text;
-    // Limit description length for preview
     return text.length > 200 ? text.substring(0, 200) + '...' : text;
 }
 
@@ -341,9 +364,11 @@ function displayArticles() {
         ? allArticles
         : allArticles.filter(article => article.category === currentCategory);
 
-    // Apply source filter (by parent source)
-    if (currentSource !== 'all') {
-        filteredArticles = filteredArticles.filter(article => getParentSource(article.source) === currentSource);
+    // Apply source filter (multi-select)
+    if (selectedSources.size > 0) {
+        filteredArticles = filteredArticles.filter(article =>
+            selectedSources.has(getParentSource(article.source))
+        );
     }
 
     // Apply search filter
@@ -366,7 +391,7 @@ function displayArticles() {
     });
 }
 
-// Create article card element (Google News style with image)
+// Create article card element
 function createArticleCard(article, index) {
     const card = document.createElement('div');
     card.className = `article-card ${article.category}`;
@@ -376,7 +401,6 @@ function createArticleCard(article, index) {
     const articleUrl = getArticleUrl(article.link, article.source);
     const isPaywalled = paywalledSources.includes(article.source);
 
-    // Create image HTML if available
     const imageHtml = article.image
         ? `<div class="article-image">
                <img src="${article.image}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'">
@@ -449,6 +473,83 @@ function getRelativeTime(date) {
         return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
     } else {
         return date.toLocaleDateString();
+    }
+}
+
+// Load today's NBA and NFL games
+async function loadTodaysGames() {
+    const gamesContainer = document.getElementById('games-container');
+
+    try {
+        // Fetch NBA games
+        const nbaGames = await fetchESPNGames('basketball', 'nba');
+        // Fetch NFL games
+        const nflGames = await fetchESPNGames('football', 'nfl');
+
+        const allGames = [...nbaGames, ...nflGames];
+
+        if (allGames.length === 0) {
+            gamesContainer.innerHTML = '<p class="loading-games">No games scheduled today</p>';
+            return;
+        }
+
+        gamesContainer.innerHTML = '';
+        allGames.forEach(game => {
+            const gameItem = document.createElement('div');
+            gameItem.className = 'game-item';
+            gameItem.innerHTML = `
+                <div class="league">${game.league}</div>
+                <div class="teams">${game.teams}</div>
+                <div class="game-time">${game.time}</div>
+            `;
+            gamesContainer.appendChild(gameItem);
+        });
+    } catch (error) {
+        console.error('Error loading games:', error);
+        gamesContainer.innerHTML = '<p class="loading-games">Unable to load games</p>';
+    }
+}
+
+// Fetch games from ESPN API
+async function fetchESPNGames(sport, league) {
+    try {
+        const today = new Date();
+        const dateStr = today.toISOString().split('T')[0].replace(/-/g, '');
+        const url = `https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/scoreboard`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (!data.events || data.events.length === 0) {
+            return [];
+        }
+
+        return data.events.slice(0, 3).map(event => {
+            const competition = event.competitions[0];
+            const homeTeam = competition.competitors.find(c => c.homeAway === 'home');
+            const awayTeam = competition.competitors.find(c => c.homeAway === 'away');
+
+            let timeStr = 'TBD';
+            if (competition.status) {
+                if (competition.status.type.completed) {
+                    timeStr = `Final: ${awayTeam.score}-${homeTeam.score}`;
+                } else if (competition.status.type.state === 'in') {
+                    timeStr = `Live: ${awayTeam.score}-${homeTeam.score}`;
+                } else {
+                    const gameDate = new Date(event.date);
+                    timeStr = gameDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                }
+            }
+
+            return {
+                league: league.toUpperCase(),
+                teams: `${awayTeam.team.abbreviation} @ ${homeTeam.team.abbreviation}`,
+                time: timeStr
+            };
+        });
+    } catch (error) {
+        console.error(`Error fetching ${league} games:`, error);
+        return [];
     }
 }
 

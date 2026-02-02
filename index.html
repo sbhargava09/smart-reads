@@ -3,58 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Reads v1.8 - Your Daily Digest</title>
+    <title>Smart Reads v2.0 - Your Daily Digest</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>📚 Smart Reads <span style="font-size: 0.5em; opacity: 0.7;">v1.8</span></h1>
-            <p class="tagline">Learn something new instead of doomscrolling</p>
-        </header>
-
-        <!-- Search Bar -->
-        <div class="search-container">
-            <input type="text" id="search-input" class="search-input" placeholder="🔍 Search articles...">
-        </div>
-
-        <div class="controls">
-            <div class="filter-section">
-                <h3>Filter by Topic:</h3>
-                <div class="filter-buttons">
-                    <button class="filter-btn active" data-category="all">All</button>
-                    <button class="filter-btn" data-category="tech">Tech</button>
-                    <button class="filter-btn" data-category="sciences">Sciences</button>
-                    <button class="filter-btn" data-category="business">Business</button>
-                    <button class="filter-btn" data-category="sports">Sports</button>
-                    <button class="filter-btn" data-category="books">Book Summaries</button>
-                    <button class="filter-btn" data-category="ophthalmology">Ophthalmology</button>
-                    <button class="filter-btn" data-category="perspectives">Perspectives</button>
+    <div class="app-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3>Filter by Source</h3>
+                <div id="source-checklist" class="source-checklist">
+                    <!-- Source checkboxes will be populated dynamically -->
                 </div>
             </div>
 
-            <div class="filter-section source-filter-section">
-                <h3>Filter by Source:</h3>
-                <div id="source-buttons" class="source-buttons">
-                    <button class="source-btn active" data-source="all">All</button>
-                    <!-- Source buttons will be populated dynamically -->
+            <div class="sidebar-section games-section">
+                <h3>Today's Games</h3>
+                <div id="games-container" class="games-container">
+                    <p class="loading-games">Loading games...</p>
                 </div>
             </div>
+        </aside>
 
-            <button id="refresh-btn" class="refresh-btn">🔄 Refresh Feed</button>
-        </div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <div class="header-top">
+                    <h1>📚 Smart Reads <span class="version">v2.0</span></h1>
+                    <button id="hard-refresh-btn" class="hard-refresh-btn" title="Hard Refresh Page">🔄</button>
+                </div>
+                <p class="tagline">Learn something new instead of doomscrolling</p>
+            </header>
 
-        <div id="loading" class="loading">
-            <p>Loading your Smart Reads...</p>
-        </div>
+            <!-- Search Bar -->
+            <div class="search-container">
+                <input type="text" id="search-input" class="search-input" placeholder="🔍 Search articles...">
+            </div>
 
-        <div id="feed" class="feed">
-            <!-- Articles will be dynamically loaded here -->
-        </div>
+            <!-- Tab Navigation -->
+            <nav class="tab-navigation">
+                <button class="tab active" data-category="all">All</button>
+                <button class="tab" data-category="tech">Tech</button>
+                <button class="tab" data-category="ophthalmology">Ophthalmology</button>
+                <button class="tab" data-category="business">Business</button>
+                <button class="tab" data-category="sports">Sports</button>
+                <button class="tab" data-category="perspectives">Perspectives</button>
+                <button class="tab" data-category="sciences">Sciences</button>
+            </nav>
 
-        <div id="error" class="error" style="display: none;">
-            <p>Oops! Having trouble loading some feeds. Try refreshing.</p>
-        </div>
+            <!-- Content Area -->
+            <div class="content-area">
+                <div id="loading" class="loading">
+                    <p>Loading your Smart Reads...</p>
+                </div>
+
+                <div id="feed" class="feed">
+                    <!-- Articles will be dynamically loaded here -->
+                </div>
+
+                <div id="error" class="error" style="display: none;">
+                    <p>Oops! Having trouble loading some feeds. Try refreshing.</p>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script src="script.js"></script>
