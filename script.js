@@ -28,6 +28,11 @@ const feedSources = {
     books: [
         { url: 'https://fourminutebooks.com/feed/', name: 'Four Minute Books' },
         { url: 'https://fs.blog/feed/', name: 'Farnam Street' }
+    ],
+    ophthalmology: [
+        { url: 'https://www.aao.org/rss/headline-rss', name: 'AAO Headlines' },
+        { url: 'https://www.reviewofophthalmology.com/RSS', name: 'Review of Ophthalmology' },
+        { url: 'https://www.ophthalmologytimes.com/rss', name: 'Ophthalmology Times' }
     ]
 };
 
@@ -35,6 +40,21 @@ const feedSources = {
 let allArticles = [];
 let currentCategory = 'all';
 let currentSpeech = null;
+
+// Sources with paywalls - URLs will be routed through removepaywall.com
+const paywalledSources = [
+    'WSJ Business',
+    'Bloomberg Markets',
+    'STAT News'
+];
+
+// Check if source has paywall and return appropriate URL
+function getArticleUrl(link, sourceName) {
+    if (paywalledSources.includes(sourceName)) {
+        return `https://www.removepaywall.com/search?url=${encodeURIComponent(link)}`;
+    }
+    return link;
+}
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -129,14 +149,18 @@ async function fetchFeed(feedUrl, sourceName, category) {
         }
 
         // Parse items
-        return data.items.slice(0, 10).map(item => ({
-            title: item.title,
-            link: item.link,
-            description: stripHtml(item.description || item.content || ''),
-            date: new Date(item.pubDate),
-            category: category,
-            source: sourceName
-        }));
+        return data.items.slice(0, 10).map(item => {
+            const fullText = stripHtml(item.description || item.content || '', false);
+            return {
+                title: item.title,
+                link: item.link,
+                description: fullText.length > 200 ? fullText.substring(0, 200) + '...' : fullText,
+                fullDescription: fullText,
+                date: new Date(item.pubDate),
+                category: category,
+                source: sourceName
+            };
+        });
     } catch (error) {
         console.error(`Error fetching ${sourceName}:`, error);
         return [];
@@ -144,11 +168,12 @@ async function fetchFeed(feedUrl, sourceName, category) {
 }
 
 // Strip HTML tags from description
-function stripHtml(html) {
+function stripHtml(html, truncate = true) {
     const tmp = document.createElement('div');
     tmp.innerHTML = html;
     const text = tmp.textContent || tmp.innerText || '';
-    // Limit description length
+    if (!truncate) return text;
+    // Limit description length for preview
     return text.length > 200 ? text.substring(0, 200) + '...' : text;
 }
 
@@ -176,23 +201,56 @@ function displayArticles() {
 function createArticleCard(article, index) {
     const card = document.createElement('div');
     card.className = `article-card ${article.category}`;
-    
+
     const relativeTime = getRelativeTime(article.date);
-    
+    const hasMoreContent = article.fullDescription.length > 200;
+    const articleUrl = getArticleUrl(article.link, article.source);
+    const isPaywalled = paywalledSources.includes(article.source);
+
     card.innerHTML = `
         <div class="article-header">
             <span class="category-tag ${article.category}">${article.category}</span>
-            <span class="source-name">${article.source}</span>
+            <span class="source-name">${article.source}${isPaywalled ? ' 🔓' : ''}</span>
         </div>
         <h2 class="article-title">
-            <a href="${article.link}" target="_blank" rel="noopener noreferrer">${article.title}</a>
+            <a href="${articleUrl}" target="_blank" rel="noopener noreferrer">${article.title}</a>
         </h2>
         ${article.description ? `<p class="article-description">${article.description}</p>` : ''}
+        ${hasMoreContent ? `
+            <div class="expandable-content" style="display: none;">
+                <p class="full-description">${article.fullDescription}</p>
+            </div>
+            <button class="expand-btn" data-expanded="false">▼ Show More</button>
+        ` : ''}
+        <div class="article-actions">
+            <a href="${articleUrl}" target="_blank" rel="noopener noreferrer" class="read-article-link">Read Full Article →</a>
+        </div>
         <div class="article-meta">
             <span class="article-date">${relativeTime}</span>
             <button class="read-aloud-btn" data-index="${index}">Read Aloud</button>
         </div>
     `;
+
+    // Add expand/collapse functionality
+    const expandBtn = card.querySelector('.expand-btn');
+    if (expandBtn) {
+        const expandableContent = card.querySelector('.expandable-content');
+        const shortDescription = card.querySelector('.article-description');
+        expandBtn.addEventListener('click', () => {
+            const isExpanded = expandBtn.dataset.expanded === 'true';
+            if (isExpanded) {
+                expandableContent.style.display = 'none';
+                shortDescription.style.display = 'block';
+                expandBtn.textContent = '▼ Show More';
+                expandBtn.dataset.expanded = 'false';
+            } else {
+                expandableContent.style.display = 'block';
+                shortDescription.style.display = 'none';
+                expandBtn.textContent = '▲ Show Less';
+                expandBtn.dataset.expanded = 'true';
+            }
+        });
+    }
 
     // Add read aloud functionality
     const readBtn = card.querySelector('.read-aloud-btn');

@@ -20,6 +20,7 @@
     --science-color: #8b5cf6;
     --sports-color: #06b6d4;
     --books-color: #ec4899;
+    --ophthalmology-color: #14b8a6;
 }
 
 body {
@@ -154,6 +155,7 @@ header h1 {
 .article-card.science { border-left-color: var(--science-color); }
 .article-card.sports { border-left-color: var(--sports-color); }
 .article-card.books { border-left-color: var(--books-color); }
+.article-card.ophthalmology { border-left-color: var(--ophthalmology-color); }
 
 .article-header {
     display: flex;
@@ -179,6 +181,7 @@ header h1 {
 .category-tag.science { background: #ede9fe; color: var(--science-color); }
 .category-tag.sports { background: #cffafe; color: var(--sports-color); }
 .category-tag.books { background: #fce7f3; color: var(--books-color); }
+.category-tag.ophthalmology { background: #ccfbf1; color: var(--ophthalmology-color); }
 
 .source-name {
     font-size: 0.8rem;
@@ -205,8 +208,60 @@ header h1 {
 .article-description {
     color: var(--secondary-color);
     font-size: 0.95rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     line-height: 1.5;
+}
+
+/* Expandable Content */
+.expandable-content {
+    margin-bottom: 0.5rem;
+}
+
+.full-description {
+    color: var(--secondary-color);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    background: var(--bg-color);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border-left: 3px solid var(--primary-color);
+}
+
+.expand-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.25rem 0;
+    margin-bottom: 0.75rem;
+    display: block;
+    transition: color 0.2s;
+}
+
+.expand-btn:hover {
+    color: #1d4ed8;
+}
+
+/* Article Actions */
+.article-actions {
+    margin-bottom: 0.75rem;
+}
+
+.read-article-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.read-article-link:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
 }
 
 .article-meta {
