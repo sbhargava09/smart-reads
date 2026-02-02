@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Reads - Your Daily Digest</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Smart Reads</h1>
+            <p class="tagline">Learn something new instead of doomscrolling</p>
+        </header>
+
+        <div class="controls">
+            <div class="filter-section">
+                <h3>Filter Topics:</h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-category="all">All</button>
+                    <button class="filter-btn" data-category="tech">Tech</button>
+                    <button class="filter-btn" data-category="medicine">Medicine</button>
+                    <button class="filter-btn" data-category="business">Business</button>
+                    <button class="filter-btn" data-category="science">Science</button>
+                    <button class="filter-btn" data-category="sports">Sports</button>
+                    <button class="filter-btn" data-category="books">Book Summaries</button>
+                </div>
+            </div>
+            <button id="refresh-btn" class="refresh-btn">🔄 Refresh Feed</button>
+        </div>
+
+        <div id="loading" class="loading">
+            <p>Loading your Smart Reads...</p>
+        </div>
+
+        <div id="feed" class="feed">
+            <!-- Articles will be dynamically loaded here -->
+        </div>
+
+        <div id="error" class="error" style="display: none;">
+            <p>Oops! Having trouble loading some feeds. Try refreshing.</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
