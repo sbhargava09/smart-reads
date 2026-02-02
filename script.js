@@ -1,4 +1,4 @@
-// Smart Reads v1.4 - Feed Management and Interactivity
+// Smart Reads v1.5 - Feed Management and Interactivity
 
 // RSS Feed Sources organized by category
 const feedSources = {
@@ -8,10 +8,13 @@ const feedSources = {
         { url: 'https://techcrunch.com/feed/', name: 'TechCrunch' },
         { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml', name: 'NYT Technology' }
     ],
-    medicine: [
+    sciences: [
         { url: 'https://www.statnews.com/feed/', name: 'STAT News' },
         { url: 'https://www.sciencedaily.com/rss/health_medicine.xml', name: 'Science Daily Medicine' },
-        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Health.xml', name: 'NYT Health' }
+        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Health.xml', name: 'NYT Health' },
+        { url: 'https://www.sciencedaily.com/rss/all.xml', name: 'Science Daily' },
+        { url: 'https://www.quantamagazine.org/feed/', name: 'Quanta Magazine' },
+        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Science.xml', name: 'NYT Science' }
     ],
     business: [
         { url: 'https://feeds.bloomberg.com/markets/news.rss', name: 'Bloomberg Markets' },
@@ -20,11 +23,6 @@ const feedSources = {
         { url: 'https://www.reutersagency.com/feed/?best-topics=business-finance', name: 'Reuters Business' },
         { url: 'https://www.usnews.com/rss/money', name: 'US News Money' },
         { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml', name: 'NYT Business' }
-    ],
-    science: [
-        { url: 'https://www.sciencedaily.com/rss/all.xml', name: 'Science Daily' },
-        { url: 'https://www.quantamagazine.org/feed/', name: 'Quanta Magazine' },
-        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Science.xml', name: 'NYT Science' }
     ],
     sports: [
         { url: 'https://www.espn.com/espn/rss/nba/news', name: 'ESPN NBA' },
@@ -38,15 +36,11 @@ const feedSources = {
         { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Books.xml', name: 'NYT Books' }
     ],
     ophthalmology: [
-        { url: 'https://www.healio.com/news/ophthalmology/feed', name: 'Healio Ophthalmology' },
-        { url: 'https://www.medscape.com/cx/rssfeeds/2224.xml', name: 'Medscape Ophthalmology' },
-        { url: 'https://eyewire.news/feed/', name: 'EyeWire News' },
-        { url: 'https://www.ophthalmologytimes.com/rss', name: 'Ophthalmology Times' },
-        { url: 'https://www.nature.com/natrevophthalmol.rss', name: 'Nature Reviews Ophthalmology' },
-        { url: 'https://www.aao.org/rss/headline-rss', name: 'AAO Headlines' },
-        { url: 'https://www.healio.com/news/ophthalmology/glaucoma/feed', name: 'Healio Glaucoma' },
-        { url: 'https://www.reviewofophthalmology.com/rss/glaucoma', name: 'Review of Ophthalmology - Glaucoma' },
-        { url: 'https://www.reviewofophthalmology.com/rss/cataract', name: 'Review of Ophthalmology - Cataract' }
+        { url: 'https://www.news-medical.net/tag/feed/Ophthalmology.aspx', name: 'News Medical Ophthalmology' },
+        { url: 'https://www.news-medical.net/tag/feed/Glaucoma.aspx', name: 'News Medical Glaucoma' },
+        { url: 'https://medicalxpress.com/rss-feed/search/?search=ophthalmology', name: 'Medical Xpress Ophthalmology' },
+        { url: 'https://medicalxpress.com/rss-feed/search/?search=glaucoma', name: 'Medical Xpress Glaucoma' },
+        { url: 'https://medicalxpress.com/rss-feed/search/?search=retina', name: 'Medical Xpress Retina' }
     ],
     perspectives: [
         { url: 'https://www.vox.com/rss/index.xml', name: 'Vox' },
@@ -123,41 +117,72 @@ function setupEventListeners() {
         });
     }
 
-    // Source filter
-    const sourceFilter = document.getElementById('source-filter');
-    if (sourceFilter) {
-        sourceFilter.addEventListener('change', (e) => {
-            currentSource = e.target.value;
-            displayArticles();
-        });
-    }
+    // Source filter buttons - setup happens after feeds load
 }
 
-// Update source filter dropdown based on current category
-function updateSourceFilter() {
-    const sourceFilter = document.getElementById('source-filter');
-    if (!sourceFilter) return;
+// Map source names to their parent publication
+function getParentSource(sourceName) {
+    const parentMap = {
+        'NYT Technology': 'NYT',
+        'NYT Health': 'NYT',
+        'NYT Business': 'NYT',
+        'NYT Science': 'NYT',
+        'NYT Sports': 'NYT',
+        'NYT Books': 'NYT',
+        'NYT Opinion': 'NYT',
+        'ESPN NBA': 'ESPN',
+        'ESPN NFL': 'ESPN',
+        'ESPN Soccer': 'ESPN',
+        'Science Daily': 'Science Daily',
+        'Science Daily Medicine': 'Science Daily',
+        'Vox': 'Vox',
+        'Vox Future Perfect': 'Vox',
+        'Vox Policy & Politics': 'Vox',
+        'News Medical Ophthalmology': 'News Medical',
+        'News Medical Glaucoma': 'News Medical',
+        'Medical Xpress Ophthalmology': 'Medical Xpress',
+        'Medical Xpress Glaucoma': 'Medical Xpress',
+        'Medical Xpress Retina': 'Medical Xpress'
+    };
+    return parentMap[sourceName] || sourceName;
+}
 
-    // Get unique sources for current category
-    let sources = [];
+// Update source filter buttons based on current category
+function updateSourceFilter() {
+    const sourceButtonsContainer = document.getElementById('source-buttons');
+    if (!sourceButtonsContainer) return;
+
+    // Get unique parent sources for current category
+    let parentSources = [];
     if (currentCategory === 'all') {
-        sources = [...new Set(allArticles.map(a => a.source))].sort();
+        parentSources = [...new Set(allArticles.map(a => getParentSource(a.source)))].sort();
     } else {
-        sources = [...new Set(allArticles
+        parentSources = [...new Set(allArticles
             .filter(a => a.category === currentCategory)
-            .map(a => a.source))].sort();
+            .map(a => getParentSource(a.source)))].sort();
     }
 
     // Reset to all sources
     currentSource = 'all';
 
-    // Build options
-    sourceFilter.innerHTML = '<option value="all">All Sources</option>';
-    sources.forEach(source => {
-        const option = document.createElement('option');
-        option.value = source;
-        option.textContent = source;
-        sourceFilter.appendChild(option);
+    // Build buttons
+    sourceButtonsContainer.innerHTML = '<button class="source-btn active" data-source="all">All</button>';
+    parentSources.forEach(source => {
+        const btn = document.createElement('button');
+        btn.className = 'source-btn';
+        btn.dataset.source = source;
+        btn.textContent = source;
+        sourceButtonsContainer.appendChild(btn);
+    });
+
+    // Add click listeners to source buttons
+    sourceButtonsContainer.querySelectorAll('.source-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            sourceButtonsContainer.querySelectorAll('.source-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentSource = btn.dataset.source;
+            displayArticles();
+        });
     });
 }
 
@@ -269,9 +294,9 @@ function displayArticles() {
         ? allArticles
         : allArticles.filter(article => article.category === currentCategory);
 
-    // Apply source filter
+    // Apply source filter (by parent source)
     if (currentSource !== 'all') {
-        filteredArticles = filteredArticles.filter(article => article.source === currentSource);
+        filteredArticles = filteredArticles.filter(article => getParentSource(article.source) === currentSource);
     }
 
     // Apply search filter

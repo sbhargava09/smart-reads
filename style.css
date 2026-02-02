@@ -1,4 +1,4 @@
-/* Smart Reads v1.4 - Google News Style Design */
+/* Smart Reads v1.5 - Google News Style Design */
 
 * {
     margin: 0;
@@ -15,13 +15,11 @@
     --border-color: #e2e8f0;
     --success-color: #10b981;
     --tech-color: #3b82f6;
-    --medicine-color: #ef4444;
+    --sciences-color: #8b5cf6;
     --business-color: #f59e0b;
-    --science-color: #8b5cf6;
     --sports-color: #06b6d4;
     --books-color: #ec4899;
     --ophthalmology-color: #14b8a6;
-    --glaucoma-color: #0d9488;
     --perspectives-color: #f6c506;
 }
 
@@ -90,30 +88,38 @@ header h1 {
     margin-bottom: 1.5rem;
 }
 
-/* Source Filter Dropdown */
+/* Source Filter Buttons */
 .source-filter-section {
     margin-top: 0.75rem;
 }
 
-.source-filter {
-    width: 100%;
-    padding: 0.6rem 1rem;
-    font-size: 0.9rem;
+.source-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.source-btn {
+    padding: 0.35rem 0.8rem;
     border: 2px solid var(--border-color);
-    border-radius: 0.5rem;
     background: var(--card-bg);
     color: var(--text-color);
+    border-radius: 2rem;
     cursor: pointer;
+    font-size: 0.8rem;
     transition: all 0.2s;
+    font-weight: 500;
 }
 
-.source-filter:focus {
-    outline: none;
-    border-color: var(--primary-color);
+.source-btn:hover {
+    border-color: var(--secondary-color);
+    transform: translateY(-1px);
 }
 
-.source-filter:hover {
-    border-color: var(--primary-color);
+.source-btn.active {
+    background: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
 }
 
 .filter-section h3 {
@@ -206,13 +212,11 @@ header h1 {
 }
 
 .article-card.tech { border-left-color: var(--tech-color); }
-.article-card.medicine { border-left-color: var(--medicine-color); }
+.article-card.sciences { border-left-color: var(--sciences-color); }
 .article-card.business { border-left-color: var(--business-color); }
-.article-card.science { border-left-color: var(--science-color); }
 .article-card.sports { border-left-color: var(--sports-color); }
 .article-card.books { border-left-color: var(--books-color); }
 .article-card.ophthalmology { border-left-color: var(--ophthalmology-color); }
-.article-card.glaucoma { border-left-color: var(--glaucoma-color); }
 .article-card.perspectives { border-left-color: var(--perspectives-color); }
 
 /* Content Wrapper - Image on Right */
@@ -261,13 +265,11 @@ header h1 {
 }
 
 .category-tag.tech { background: #dbeafe; color: var(--tech-color); }
-.category-tag.medicine { background: #fee2e2; color: var(--medicine-color); }
+.category-tag.sciences { background: #ede9fe; color: var(--sciences-color); }
 .category-tag.business { background: #fef3c7; color: var(--business-color); }
-.category-tag.science { background: #ede9fe; color: var(--science-color); }
 .category-tag.sports { background: #cffafe; color: var(--sports-color); }
 .category-tag.books { background: #fce7f3; color: var(--books-color); }
 .category-tag.ophthalmology { background: #ccfbf1; color: var(--ophthalmology-color); }
-.category-tag.glaucoma { background: #99f6e4; color: var(--glaucoma-color); }
 .category-tag.perspectives { background: #fef9c3; color: #a16207; }
 
 .source-name {
