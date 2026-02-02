@@ -1,4 +1,4 @@
-// Smart Reads v1.7 - Feed Management and Interactivity
+// Smart Reads v1.8 - Feed Management and Interactivity
 
 // RSS Feed Sources organized by category
 const feedSources = {
@@ -243,7 +243,8 @@ async function fetchFeed(feedUrl, sourceName, category) {
 
         if (data.status !== 'ok') {
             console.warn(`Failed to fetch ${sourceName}:`, data.message);
-            return [];
+            // Try backup proxy for failed feeds
+            return await fetchFeedBackup(feedUrl, sourceName, category);
         }
 
         // Parse items
@@ -269,6 +270,54 @@ async function fetchFeed(feedUrl, sourceName, category) {
         });
     } catch (error) {
         console.error(`Error fetching ${sourceName}:`, error);
+        return [];
+    }
+}
+
+// Backup fetch using allorigins.win proxy for XML parsing
+async function fetchFeedBackup(feedUrl, sourceName, category) {
+    try {
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(feedUrl)}`;
+        const response = await fetch(proxyUrl);
+        const text = await response.text();
+
+        // Parse XML
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(text, 'text/xml');
+        const items = xml.querySelectorAll('item');
+
+        if (items.length === 0) {
+            console.warn(`Backup fetch failed for ${sourceName}: No items found`);
+            return [];
+        }
+
+        const articles = [];
+        items.forEach((item, index) => {
+            if (index >= 10) return;
+
+            const title = item.querySelector('title')?.textContent || '';
+            const link = item.querySelector('link')?.textContent || '';
+            const description = item.querySelector('description')?.textContent || '';
+            const pubDate = item.querySelector('pubDate')?.textContent || '';
+
+            const fullText = stripHtml(description, false);
+
+            articles.push({
+                title: title,
+                link: link,
+                description: fullText.length > 200 ? fullText.substring(0, 200) + '...' : fullText,
+                fullDescription: fullText,
+                image: null,
+                date: new Date(pubDate),
+                category: category,
+                source: sourceName
+            });
+        });
+
+        console.log(`Backup fetch succeeded for ${sourceName}: ${articles.length} articles`);
+        return articles;
+    } catch (error) {
+        console.error(`Backup fetch failed for ${sourceName}:`, error);
         return [];
     }
 }
