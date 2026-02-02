@@ -3,15 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Reads v1.1 - Your Daily Digest</title>
+    <title>Smart Reads v1.2 - Your Daily Digest</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📚 Smart Reads <span style="font-size: 0.5em; opacity: 0.7;">v1.1</span></h1>
+            <h1>📚 Smart Reads <span style="font-size: 0.5em; opacity: 0.7;">v1.2</span></h1>
             <p class="tagline">Learn something new instead of doomscrolling</p>
         </header>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input type="text" id="search-input" class="search-input" placeholder="🔍 Search articles...">
+        </div>
 
         <div class="controls">
             <div class="filter-section">
@@ -25,6 +30,7 @@
                     <button class="filter-btn" data-category="sports">Sports</button>
                     <button class="filter-btn" data-category="books">Book Summaries</button>
                     <button class="filter-btn" data-category="ophthalmology">Ophthalmology</button>
+                    <button class="filter-btn" data-category="glaucoma">Glaucoma</button>
                 </div>
             </div>
             <button id="refresh-btn" class="refresh-btn">🔄 Refresh Feed</button>

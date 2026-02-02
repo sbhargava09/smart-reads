@@ -1,4 +1,4 @@
-// Smart Reads - Feed Management and Interactivity
+// Smart Reads v1.2 - Feed Management and Interactivity
 
 // RSS Feed Sources organized by category
 const feedSources = {
@@ -30,16 +30,21 @@ const feedSources = {
         { url: 'https://fs.blog/feed/', name: 'Farnam Street' }
     ],
     ophthalmology: [
-        { url: 'https://www.aao.org/rss/headline-rss', name: 'AAO Headlines' },
-        { url: 'https://www.reviewofophthalmology.com/RSS', name: 'Review of Ophthalmology' },
-        { url: 'https://www.ophthalmologytimes.com/rss', name: 'Ophthalmology Times' }
+        { url: 'https://www.healio.com/news/ophthalmology/feed', name: 'Healio Ophthalmology' },
+        { url: 'https://www.medscape.com/cx/rssfeeds/2224.xml', name: 'Medscape Ophthalmology' },
+        { url: 'https://eyewire.news/feed/', name: 'EyeWire News' }
+    ],
+    glaucoma: [
+        { url: 'https://www.healio.com/news/ophthalmology/glaucoma/feed', name: 'Healio Glaucoma' },
+        { url: 'https://glaucomatoday.com/feed/', name: 'Glaucoma Today' },
+        { url: 'https://www.reviewofophthalmology.com/rss/glaucoma', name: 'Review of Ophthalmology - Glaucoma' }
     ]
 };
 
 // Global state
 let allArticles = [];
 let currentCategory = 'all';
-let currentSpeech = null;
+let searchQuery = '';
 
 // Sources with paywalls - URLs will be routed through removepaywall.com
 const paywalledSources = [
@@ -79,12 +84,14 @@ function setupEventListeners() {
         loadFeeds();
     });
 
-    // Stop speech when page is about to unload
-    window.addEventListener('beforeunload', () => {
-        if (currentSpeech) {
-            window.speechSynthesis.cancel();
-        }
-    });
+    // Search input
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase();
+            displayArticles();
+        });
+    }
 }
 
 // Load all RSS feeds
@@ -92,14 +99,14 @@ async function loadFeeds() {
     const loadingEl = document.getElementById('loading');
     const feedEl = document.getElementById('feed');
     const errorEl = document.getElementById('error');
-    
+
     loadingEl.style.display = 'block';
     feedEl.innerHTML = '';
     errorEl.style.display = 'none';
     allArticles = [];
 
     const promises = [];
-    
+
     // Fetch all feeds
     for (const [category, feeds] of Object.entries(feedSources)) {
         for (const feed of feeds) {
@@ -109,7 +116,7 @@ async function loadFeeds() {
 
     try {
         const results = await Promise.allSettled(promises);
-        
+
         // Collect all successful articles
         results.forEach(result => {
             if (result.status === 'fulfilled' && result.value) {
@@ -121,7 +128,7 @@ async function loadFeeds() {
         allArticles.sort((a, b) => b.date - a.date);
 
         loadingEl.style.display = 'none';
-        
+
         if (allArticles.length === 0) {
             errorEl.style.display = 'block';
         } else {
@@ -139,7 +146,7 @@ async function fetchFeed(feedUrl, sourceName, category) {
     try {
         // Using RSS2JSON service as a CORS proxy
         const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`;
-        
+
         const response = await fetch(proxyUrl);
         const data = await response.json();
 
@@ -151,11 +158,19 @@ async function fetchFeed(feedUrl, sourceName, category) {
         // Parse items
         return data.items.slice(0, 10).map(item => {
             const fullText = stripHtml(item.description || item.content || '', false);
+            // Extract image from enclosure, thumbnail, or content
+            let image = item.enclosure?.link || item.thumbnail || null;
+            if (!image && item.content) {
+                const imgMatch = item.content.match(/<img[^>]+src="([^">]+)"/);
+                if (imgMatch) image = imgMatch[1];
+            }
+
             return {
                 title: item.title,
                 link: item.link,
                 description: fullText.length > 200 ? fullText.substring(0, 200) + '...' : fullText,
                 fullDescription: fullText,
+                image: image,
                 date: new Date(item.pubDate),
                 category: category,
                 source: sourceName
@@ -177,17 +192,26 @@ function stripHtml(html, truncate = true) {
     return text.length > 200 ? text.substring(0, 200) + '...' : text;
 }
 
-// Display articles based on current filter
+// Display articles based on current filter and search
 function displayArticles() {
     const feedEl = document.getElementById('feed');
     feedEl.innerHTML = '';
 
-    const filteredArticles = currentCategory === 'all' 
-        ? allArticles 
+    let filteredArticles = currentCategory === 'all'
+        ? allArticles
         : allArticles.filter(article => article.category === currentCategory);
 
+    // Apply search filter
+    if (searchQuery) {
+        filteredArticles = filteredArticles.filter(article =>
+            article.title.toLowerCase().includes(searchQuery) ||
+            article.description.toLowerCase().includes(searchQuery) ||
+            article.source.toLowerCase().includes(searchQuery)
+        );
+    }
+
     if (filteredArticles.length === 0) {
-        feedEl.innerHTML = '<p style="text-align: center; color: var(--secondary-color); padding: 2rem;">No articles found for this category.</p>';
+        feedEl.innerHTML = '<p style="text-align: center; color: var(--secondary-color); padding: 2rem;">No articles found. Try a different search or category.</p>';
         return;
     }
 
@@ -197,7 +221,7 @@ function displayArticles() {
     });
 }
 
-// Create article card element
+// Create article card element (Google News style with image)
 function createArticleCard(article, index) {
     const card = document.createElement('div');
     card.className = `article-card ${article.category}`;
@@ -207,27 +231,36 @@ function createArticleCard(article, index) {
     const articleUrl = getArticleUrl(article.link, article.source);
     const isPaywalled = paywalledSources.includes(article.source);
 
+    // Create image HTML if available
+    const imageHtml = article.image
+        ? `<div class="article-image">
+               <img src="${article.image}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'">
+           </div>`
+        : '';
+
     card.innerHTML = `
-        <div class="article-header">
-            <span class="category-tag ${article.category}">${article.category}</span>
-            <span class="source-name">${article.source}${isPaywalled ? ' 🔓' : ''}</span>
-        </div>
-        <h2 class="article-title">
-            <a href="${articleUrl}" target="_blank" rel="noopener noreferrer">${article.title}</a>
-        </h2>
-        ${article.description ? `<p class="article-description">${article.description}</p>` : ''}
-        ${hasMoreContent ? `
-            <div class="expandable-content" style="display: none;">
-                <p class="full-description">${article.fullDescription}</p>
+        <div class="article-content-wrapper">
+            <div class="article-text">
+                <div class="article-header">
+                    <span class="category-tag ${article.category}">${article.category}</span>
+                    <span class="source-name">${article.source}${isPaywalled ? ' 🔓' : ''}</span>
+                </div>
+                <h2 class="article-title">
+                    <a href="${articleUrl}" target="_blank" rel="noopener noreferrer">${article.title}</a>
+                </h2>
+                ${article.description ? `<p class="article-description">${article.description}</p>` : ''}
+                ${hasMoreContent ? `
+                    <div class="expandable-content" style="display: none;">
+                        <p class="full-description">${article.fullDescription}</p>
+                    </div>
+                    <button class="expand-btn" data-expanded="false">▼ Show More</button>
+                ` : ''}
+                <div class="article-meta">
+                    <span class="article-date">${relativeTime}</span>
+                    <a href="${articleUrl}" target="_blank" rel="noopener noreferrer" class="read-article-link">Read Article →</a>
+                </div>
             </div>
-            <button class="expand-btn" data-expanded="false">▼ Show More</button>
-        ` : ''}
-        <div class="article-actions">
-            <a href="${articleUrl}" target="_blank" rel="noopener noreferrer" class="read-article-link">Read Full Article →</a>
-        </div>
-        <div class="article-meta">
-            <span class="article-date">${relativeTime}</span>
-            <button class="read-aloud-btn" data-index="${index}">Read Aloud</button>
+            ${imageHtml}
         </div>
     `;
 
@@ -252,64 +285,7 @@ function createArticleCard(article, index) {
         });
     }
 
-    // Add read aloud functionality
-    const readBtn = card.querySelector('.read-aloud-btn');
-    readBtn.addEventListener('click', () => toggleReadAloud(article, readBtn));
-
     return card;
-}
-
-// Toggle read aloud functionality
-function toggleReadAloud(article, button) {
-    // If currently playing this article, stop it
-    if (currentSpeech && button.classList.contains('playing')) {
-        window.speechSynthesis.cancel();
-        button.classList.remove('playing');
-        button.textContent = 'Read Aloud';
-        currentSpeech = null;
-        return;
-    }
-
-    // Stop any current speech
-    if (currentSpeech) {
-        window.speechSynthesis.cancel();
-        document.querySelectorAll('.read-aloud-btn.playing').forEach(btn => {
-            btn.classList.remove('playing');
-            btn.textContent = 'Read Aloud';
-        });
-    }
-
-    // Start new speech
-    const textToRead = `${article.title}. ${article.description}`;
-    const utterance = new SpeechSynthesisUtterance(textToRead);
-    
-    // Configure speech
-    utterance.rate = 1.0; // Normal speed
-    utterance.pitch = 1.0; // Normal pitch
-    utterance.volume = 1.0; // Full volume
-
-    // Handle speech end
-    utterance.onend = () => {
-        button.classList.remove('playing');
-        button.textContent = 'Read Aloud';
-        currentSpeech = null;
-    };
-
-    // Handle speech error
-    utterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event);
-        button.classList.remove('playing');
-        button.textContent = 'Read Aloud';
-        currentSpeech = null;
-    };
-
-    // Update button state
-    button.classList.add('playing');
-    button.textContent = 'Stop Reading';
-
-    // Start speaking
-    window.speechSynthesis.speak(utterance);
-    currentSpeech = utterance;
 }
 
 // Get relative time string
