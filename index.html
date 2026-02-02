@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Reads v1.2 - Your Daily Digest</title>
+    <title>Smart Reads v1.4 - Your Daily Digest</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📚 Smart Reads <span style="font-size: 0.5em; opacity: 0.7;">v1.2</span></h1>
+            <h1>📚 Smart Reads <span style="font-size: 0.5em; opacity: 0.7;">v1.4</span></h1>
             <p class="tagline">Learn something new instead of doomscrolling</p>
         </header>
 
@@ -20,7 +20,7 @@
 
         <div class="controls">
             <div class="filter-section">
-                <h3>Filter Topics:</h3>
+                <h3>Filter by Topic:</h3>
                 <div class="filter-buttons">
                     <button class="filter-btn active" data-category="all">All</button>
                     <button class="filter-btn" data-category="tech">Tech</button>
@@ -30,9 +30,18 @@
                     <button class="filter-btn" data-category="sports">Sports</button>
                     <button class="filter-btn" data-category="books">Book Summaries</button>
                     <button class="filter-btn" data-category="ophthalmology">Ophthalmology</button>
-                    <button class="filter-btn" data-category="glaucoma">Glaucoma</button>
+                    <button class="filter-btn" data-category="perspectives">Perspectives</button>
                 </div>
             </div>
+
+            <div class="filter-section source-filter-section">
+                <h3>Filter by Source:</h3>
+                <select id="source-filter" class="source-filter">
+                    <option value="all">All Sources</option>
+                    <!-- Options will be populated dynamically -->
+                </select>
+            </div>
+
             <button id="refresh-btn" class="refresh-btn">🔄 Refresh Feed</button>
         </div>
 

@@ -1,56 +1,85 @@
-// Smart Reads v1.2 - Feed Management and Interactivity
+// Smart Reads v1.4 - Feed Management and Interactivity
 
 // RSS Feed Sources organized by category
 const feedSources = {
     tech: [
         { url: 'https://www.theverge.com/rss/index.xml', name: 'The Verge' },
         { url: 'https://feeds.arstechnica.com/arstechnica/index', name: 'Ars Technica' },
-        { url: 'https://techcrunch.com/feed/', name: 'TechCrunch' }
+        { url: 'https://techcrunch.com/feed/', name: 'TechCrunch' },
+        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml', name: 'NYT Technology' }
     ],
     medicine: [
         { url: 'https://www.statnews.com/feed/', name: 'STAT News' },
-        { url: 'https://www.sciencedaily.com/rss/health_medicine.xml', name: 'Science Daily Medicine' }
+        { url: 'https://www.sciencedaily.com/rss/health_medicine.xml', name: 'Science Daily Medicine' },
+        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Health.xml', name: 'NYT Health' }
     ],
     business: [
         { url: 'https://feeds.bloomberg.com/markets/news.rss', name: 'Bloomberg Markets' },
         { url: 'https://www.cnbc.com/id/100003114/device/rss/rss.html', name: 'CNBC Top News' },
-        { url: 'https://www.wsj.com/xml/rss/3_7085.xml', name: 'WSJ Business' }
+        { url: 'https://www.wsj.com/xml/rss/3_7085.xml', name: 'WSJ Business' },
+        { url: 'https://www.reutersagency.com/feed/?best-topics=business-finance', name: 'Reuters Business' },
+        { url: 'https://www.usnews.com/rss/money', name: 'US News Money' },
+        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml', name: 'NYT Business' }
     ],
     science: [
         { url: 'https://www.sciencedaily.com/rss/all.xml', name: 'Science Daily' },
-        { url: 'https://www.quantamagazine.org/feed/', name: 'Quanta Magazine' }
+        { url: 'https://www.quantamagazine.org/feed/', name: 'Quanta Magazine' },
+        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Science.xml', name: 'NYT Science' }
     ],
     sports: [
         { url: 'https://www.espn.com/espn/rss/nba/news', name: 'ESPN NBA' },
         { url: 'https://www.espn.com/espn/rss/nfl/news', name: 'ESPN NFL' },
-        { url: 'https://www.espn.com/espn/rss/soccer/news', name: 'ESPN Soccer' }
+        { url: 'https://www.espn.com/espn/rss/soccer/news', name: 'ESPN Soccer' },
+        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Sports.xml', name: 'NYT Sports' }
     ],
     books: [
         { url: 'https://fourminutebooks.com/feed/', name: 'Four Minute Books' },
-        { url: 'https://fs.blog/feed/', name: 'Farnam Street' }
+        { url: 'https://fs.blog/feed/', name: 'Farnam Street' },
+        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Books.xml', name: 'NYT Books' }
     ],
     ophthalmology: [
         { url: 'https://www.healio.com/news/ophthalmology/feed', name: 'Healio Ophthalmology' },
         { url: 'https://www.medscape.com/cx/rssfeeds/2224.xml', name: 'Medscape Ophthalmology' },
-        { url: 'https://eyewire.news/feed/', name: 'EyeWire News' }
-    ],
-    glaucoma: [
+        { url: 'https://eyewire.news/feed/', name: 'EyeWire News' },
+        { url: 'https://www.ophthalmologytimes.com/rss', name: 'Ophthalmology Times' },
+        { url: 'https://www.nature.com/natrevophthalmol.rss', name: 'Nature Reviews Ophthalmology' },
+        { url: 'https://www.aao.org/rss/headline-rss', name: 'AAO Headlines' },
         { url: 'https://www.healio.com/news/ophthalmology/glaucoma/feed', name: 'Healio Glaucoma' },
-        { url: 'https://glaucomatoday.com/feed/', name: 'Glaucoma Today' },
-        { url: 'https://www.reviewofophthalmology.com/rss/glaucoma', name: 'Review of Ophthalmology - Glaucoma' }
+        { url: 'https://www.reviewofophthalmology.com/rss/glaucoma', name: 'Review of Ophthalmology - Glaucoma' },
+        { url: 'https://www.reviewofophthalmology.com/rss/cataract', name: 'Review of Ophthalmology - Cataract' }
+    ],
+    perspectives: [
+        { url: 'https://www.vox.com/rss/index.xml', name: 'Vox' },
+        { url: 'https://www.vox.com/rss/future-perfect/index.xml', name: 'Vox Future Perfect' },
+        { url: 'https://www.vox.com/rss/policy-and-politics/index.xml', name: 'Vox Policy & Politics' },
+        { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Opinion.xml', name: 'NYT Opinion' },
+        { url: 'https://www.theatlantic.com/feed/all/', name: 'The Atlantic' },
+        { url: 'https://www.newyorker.com/feed/news', name: 'The New Yorker' },
+        { url: 'https://www.economist.com/the-world-this-week/rss.xml', name: 'The Economist' }
     ]
 };
 
 // Global state
 let allArticles = [];
 let currentCategory = 'all';
+let currentSource = 'all';
 let searchQuery = '';
 
 // Sources with paywalls - URLs will be routed through removepaywall.com
 const paywalledSources = [
     'WSJ Business',
     'Bloomberg Markets',
-    'STAT News'
+    'STAT News',
+    'NYT Technology',
+    'NYT Health',
+    'NYT Business',
+    'NYT Science',
+    'NYT Sports',
+    'NYT Books',
+    'NYT Opinion',
+    'The Atlantic',
+    'The New Yorker',
+    'The Economist'
 ];
 
 // Check if source has paywall and return appropriate URL
@@ -75,6 +104,7 @@ function setupEventListeners() {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentCategory = btn.dataset.category;
+            updateSourceFilter();
             displayArticles();
         });
     });
@@ -92,6 +122,43 @@ function setupEventListeners() {
             displayArticles();
         });
     }
+
+    // Source filter
+    const sourceFilter = document.getElementById('source-filter');
+    if (sourceFilter) {
+        sourceFilter.addEventListener('change', (e) => {
+            currentSource = e.target.value;
+            displayArticles();
+        });
+    }
+}
+
+// Update source filter dropdown based on current category
+function updateSourceFilter() {
+    const sourceFilter = document.getElementById('source-filter');
+    if (!sourceFilter) return;
+
+    // Get unique sources for current category
+    let sources = [];
+    if (currentCategory === 'all') {
+        sources = [...new Set(allArticles.map(a => a.source))].sort();
+    } else {
+        sources = [...new Set(allArticles
+            .filter(a => a.category === currentCategory)
+            .map(a => a.source))].sort();
+    }
+
+    // Reset to all sources
+    currentSource = 'all';
+
+    // Build options
+    sourceFilter.innerHTML = '<option value="all">All Sources</option>';
+    sources.forEach(source => {
+        const option = document.createElement('option');
+        option.value = source;
+        option.textContent = source;
+        sourceFilter.appendChild(option);
+    });
 }
 
 // Load all RSS feeds
@@ -132,6 +199,7 @@ async function loadFeeds() {
         if (allArticles.length === 0) {
             errorEl.style.display = 'block';
         } else {
+            updateSourceFilter();
             displayArticles();
         }
     } catch (error) {
@@ -201,6 +269,11 @@ function displayArticles() {
         ? allArticles
         : allArticles.filter(article => article.category === currentCategory);
 
+    // Apply source filter
+    if (currentSource !== 'all') {
+        filteredArticles = filteredArticles.filter(article => article.source === currentSource);
+    }
+
     // Apply search filter
     if (searchQuery) {
         filteredArticles = filteredArticles.filter(article =>
@@ -211,7 +284,7 @@ function displayArticles() {
     }
 
     if (filteredArticles.length === 0) {
-        feedEl.innerHTML = '<p style="text-align: center; color: var(--secondary-color); padding: 2rem;">No articles found. Try a different search or category.</p>';
+        feedEl.innerHTML = '<p style="text-align: center; color: var(--secondary-color); padding: 2rem;">No articles found. Try a different search or filter.</p>';
         return;
     }
 
