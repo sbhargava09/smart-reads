@@ -1,4 +1,4 @@
-// Smart Reads v1.5 - Feed Management and Interactivity
+// Smart Reads v1.6 - Feed Management and Interactivity
 
 // RSS Feed Sources organized by category
 const feedSources = {
@@ -36,11 +36,10 @@ const feedSources = {
         { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Books.xml', name: 'NYT Books' }
     ],
     ophthalmology: [
-        { url: 'https://www.news-medical.net/tag/feed/Ophthalmology.aspx', name: 'News Medical Ophthalmology' },
-        { url: 'https://www.news-medical.net/tag/feed/Glaucoma.aspx', name: 'News Medical Glaucoma' },
-        { url: 'https://medicalxpress.com/rss-feed/search/?search=ophthalmology', name: 'Medical Xpress Ophthalmology' },
-        { url: 'https://medicalxpress.com/rss-feed/search/?search=glaucoma', name: 'Medical Xpress Glaucoma' },
-        { url: 'https://medicalxpress.com/rss-feed/search/?search=retina', name: 'Medical Xpress Retina' }
+        { url: 'https://news.google.com/rss/search?q=ophthalmology&hl=en-US&gl=US&ceid=US:en', name: 'Google News Ophthalmology' },
+        { url: 'https://news.google.com/rss/search?q=glaucoma&hl=en-US&gl=US&ceid=US:en', name: 'Google News Glaucoma' },
+        { url: 'https://news.google.com/rss/search?q=retina+disease&hl=en-US&gl=US&ceid=US:en', name: 'Google News Retina' },
+        { url: 'https://news.google.com/rss/search?q=cataract&hl=en-US&gl=US&ceid=US:en', name: 'Google News Cataract' }
     ],
     perspectives: [
         { url: 'https://www.vox.com/rss/index.xml', name: 'Vox' },
@@ -138,11 +137,10 @@ function getParentSource(sourceName) {
         'Vox': 'Vox',
         'Vox Future Perfect': 'Vox',
         'Vox Policy & Politics': 'Vox',
-        'News Medical Ophthalmology': 'News Medical',
-        'News Medical Glaucoma': 'News Medical',
-        'Medical Xpress Ophthalmology': 'Medical Xpress',
-        'Medical Xpress Glaucoma': 'Medical Xpress',
-        'Medical Xpress Retina': 'Medical Xpress'
+        'Google News Ophthalmology': 'Google News',
+        'Google News Glaucoma': 'Google News',
+        'Google News Retina': 'Google News',
+        'Google News Cataract': 'Google News'
     };
     return parentMap[sourceName] || sourceName;
 }
