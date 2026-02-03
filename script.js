@@ -12,7 +12,7 @@ const feedSources = {
         { url: 'https://news.google.com/rss/search?q=ophthalmology', name: 'Google News Ophthalmology', useBackup: true },
         { url: 'https://news.google.com/rss/search?q=glaucoma', name: 'Google News Glaucoma', useBackup: true },
         { url: 'https://news.google.com/rss/search?q=eye+surgery', name: 'Google News Eye Surgery', useBackup: true },
-        { url: 'https://news.google.com/rss/search?q=macular+degeneration', name: 'Google News Macular Degeneration', useBackup: true }
+        { url: 'https://news.google.com/rss/search?q=cataract', name: 'Google News Cataract', useBackup: true }
     ],
     business: [
         { url: 'https://feeds.bloomberg.com/markets/news.rss', name: 'Bloomberg Markets' },
@@ -38,7 +38,6 @@ const feedSources = {
         { url: 'https://www.economist.com/the-world-this-week/rss.xml', name: 'The Economist' }
     ],
     sciences: [
-        { url: 'https://www.statnews.com/feed/', name: 'STAT News' },
         { url: 'https://www.sciencedaily.com/rss/health_medicine.xml', name: 'Science Daily Medicine' },
         { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Health.xml', name: 'NYT Health' },
         { url: 'https://www.sciencedaily.com/rss/all.xml', name: 'Science Daily' },
@@ -57,7 +56,6 @@ let searchQuery = '';
 const paywalledSources = [
     'WSJ Business',
     'Bloomberg Markets',
-    'STAT News',
     'NYT Technology',
     'NYT Health',
     'NYT Business',
@@ -89,7 +87,7 @@ function getParentSource(sourceName) {
         'Google News Ophthalmology': 'Google News',
         'Google News Glaucoma': 'Google News',
         'Google News Eye Surgery': 'Google News',
-        'Google News Macular Degeneration': 'Google News'
+        'Google News Cataract': 'Google News'
     };
     return parentMap[sourceName] || sourceName;
 }
